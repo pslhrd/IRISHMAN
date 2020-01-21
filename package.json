@@ -29,5 +29,10 @@
     "gh-pages": "^2.1.1",
     "parcel-bundler": "^1.12.4",
     "sass": "^1.23.3"
+  },
+  "dependencies": {
+    "examples": "^0.1.0",
+    "three": ">=0.111.0",
+    "three-gltf-loader": "^1.111.0"
   }
 }
