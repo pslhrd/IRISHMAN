@@ -4,16 +4,16 @@ import postit from '/src/assets/models/PROD.glb'
 
 const loader = new GLTFLoader();
 
-var scene = new THREE.Scene()
-var renderer = new THREE.WebGLRenderer()
-var objects = []
+let scene = new THREE.Scene()
+let renderer = new THREE.WebGLRenderer()
+let objects = []
 
 renderer.setSize( window.innerWidth, window.innerHeight )
 document.body.appendChild(renderer.domElement)
 renderer.outputEncoding = THREE.sRGBEncoding
 
 let camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
-var light = new THREE.PointLight( 0xff0000, 1, 100 );
+let light = new THREE.PointLight( 0xff0000, 1, 100 );
 
 window.addEventListener( 'resize', function () {
   camera.aspect = window.innerWidth / window.innerHeight;
