@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Helvetica, sans-serif;
+}
+body canvas {
+  width: 100vw;
+  height: 100vh;
+}
+
+/*# sourceMappingURL=/style.6d80b553.css.map */
