@@ -7,7 +7,7 @@
 
 ```bash
 git clone https://github.com/AndrewIH/IRISHMAN.git
-cd PORTFOLIO_V2
+cd IRISHMAN
 yarn # or npm install
 yarn start # or npm start: launches dev server and opens browser. Ctrl+C to stop
 ```
