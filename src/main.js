@@ -1,14 +1,15 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import postit from '/src/assets/models/PROD.glb'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+import postit from '/src/assets/models/PROD3.glb'
 
-const loader = new GLTFLoader();
+const loader = new GLTFLoader()
 
 let scene = new THREE.Scene()
-let renderer = new THREE.WebGLRenderer()
+let renderer = new THREE.WebGLRenderer({ antialias: true })
 let objects = []
-
+const body = document.querySelector('body')
 const MAP_NAMES = [
   'map',
   'aoMap',
@@ -20,14 +21,18 @@ const MAP_NAMES = [
   'specularMap',
 ];
 
-let camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
-
 // Light
-var light = new THREE.AmbientLight( 0x404040 );
-scene.add(light)
-
 // Settings
+
+// Camera
+let camera = new THREE.PerspectiveCamera( 22, window.innerWidth / window.innerHeight )
+camera.position.x = -65
+camera.position.y = 0
+camera.position.z = -10
+camera.rotation._x = 1.57
+camera.rotation._y = -0.04
+camera.rotation._z = 1.60
+camera.far = 1000
 
 // Resize
 window.addEventListener( 'resize', function () {
@@ -40,12 +45,16 @@ window.addEventListener( 'resize', function () {
 renderer.setSize(window.innerWidth, window.innerHeight)
 document.body.appendChild(renderer.domElement)
 renderer.outputEncoding = THREE.sRGBEncoding
+renderer.pixelRatio = 2
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+renderer.shadowMapSoft = true
 
 // Controls
-let controls = new OrbitControls(camera,renderer.domElement);
+let controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.25;
-controls.maxPolarAngle = Math.PI/2;
+controls.dampingFactor = 0.05;
+controls.maxPolarAngle = Math.PI;
 
 // Animate
 function animate() {
@@ -61,11 +70,9 @@ loader.load(
   function (gltf) {
     gltf.animations; // Array<THREE.AnimationClip>
     gltf.scene; // THREE.Scene
-    gltf.scenes; // Array<THREE.Scene>
     gltf.cameras; // Array<THREE.Camera>
-    gltf.asset; // Object
 
-    handleSceneLoaded(gltf);
+    handleSceneLoaded(gltf)
   },
   // called while loading is progressing
   function ( xhr ) {
@@ -73,23 +80,29 @@ loader.load(
   },
   // called when loading has errors
   function ( error ) {
-    console.log( 'An error happened' );
+    console.log(error);
   }
 )
 
+window.addEventListener('click', function(){
+  console.log(camera)
+})
+
 function handleSceneLoaded(gltf){
   scene.add(gltf.scene);
-  let blenderCamera = gltf.scene.children[0];
-  let blenderLight = gltf.scene.children[1];
-  let materials;
+  scene.add(camera)
 
+  let blenderCamera = gltf.scene.children[4]
+  let cameraInfos = gltf.scene.children[4].children[0]
+  let blenderLight = gltf.scene.children[0]
+  let materials;
 
 
   gltf.scene.traverse( function( object ) {
     objects.push(object)
     if ( object.isMesh ){
-      object.castShadow = true;
-      object.receiveShadow = true;
+      object.receiveShadow = true
+      object.castShadow = true
       if( object.material ) {
         object.material.side = THREE.DoubleSide;
         if (object.material.map) object.material.map.encoding = THREE.sRGBEncoding;
@@ -99,20 +112,36 @@ function handleSceneLoaded(gltf){
     }
   })
 
-  console.log(objects[17])
+  console.log(gltf.scene)
 
-  camera.position.x = blenderCamera.position.x;
-  camera.position.y = blenderCamera.position.y;
-  camera.position.z = blenderCamera.position.z;
 
-  camera.aspect = blenderCamera.aspect;
-  camera.fov = blenderCamera.fov;
-  camera.far = blenderCamera.far;
-  camera.near = blenderCamera.near;
+  objects[2].intensity = 2
+  objects[2].castShadow = false
+  objects[2].receiveShadow = false
+  objects[2].decay = 10
+  objects[2].distance = 200
 
-  light.castShadow = true;
-  light.position.x = blenderLight.position.x;
-  light.position.y = blenderLight.position.y;
-  light.position.z = blenderLight.position.z;
+  // objects[4].shadow.radius = 30
+  // objects[4].shadow.bias = 0.00001
+  // objects[4].shadow.mapSize.width = 2048;
+  // objects[4].shadow.mapSize.height = 2048;
+
+  // camera.position.x = -65;
+  // camera.position.y = 0;
+  // camera.position.z = -10;
+
+  // camera.rotation.z = blenderCamera.rotation.z;
+  // camera.rotation.x = blenderCamera.rotation.x;
+  // camera.rotation.y = blenderCamera.rotation.y;
+
+  // camera.aspect = cameraInfos.aspect;
+  // camera.fov = cameraInfos.fov;
+  // camera.far = cameraInfos.far;
+  // camera.near = cameraInfos.near;
+
+  // light.castShadow = true;
+  // light.position.x = blenderLight.position.x;
+  // light.position.y = blenderLight.position.y;
+  // light.position.z = blenderLight.position.z;
 
 }
