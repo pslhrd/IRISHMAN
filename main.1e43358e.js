@@ -44508,8 +44508,8 @@ TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
 exports.TweenMax = TweenMaxWithCSS;
 exports.default = exports.gsap = gsapWithCSS;
-},{"./gsap-core.js":"node_modules/gsap/gsap-core.js","./CSSPlugin.js":"node_modules/gsap/CSSPlugin.js"}],"src/assets/models/PROD3.glb":[function(require,module,exports) {
-module.exports = "/PROD3.8b687758.glb";
+},{"./gsap-core.js":"node_modules/gsap/gsap-core.js","./CSSPlugin.js":"node_modules/gsap/CSSPlugin.js"}],"src/assets/models/PROD7.gltf":[function(require,module,exports) {
+module.exports = "/PROD7.a870b0aa.gltf";
 },{}],"src/js/splittext.js":[function(require,module,exports) {
 var global = arguments[3];
 var define;
@@ -45245,7 +45245,7 @@ var _DRACOLoader = require("three/examples/jsm/loaders/DRACOLoader.js");
 
 var _gsap = _interopRequireDefault(require("gsap"));
 
-var _PROD = _interopRequireDefault(require("/src/assets/models/PROD3.glb"));
+var _PROD = _interopRequireDefault(require("/src/assets/models/PROD7.gltf"));
 
 var _splittext = _interopRequireDefault(require("/src/js/splittext"));
 
@@ -45260,11 +45260,63 @@ var close = document.querySelector('.close');
 var launch = document.querySelector('.loader_btn');
 var intro = document.querySelector('.loader');
 var raycaster = new THREE.Raycaster();
+var customCursor = document.querySelector('.cursor');
+var hoverStates = document.querySelector('.hover-states');
+var mouseX = 0;
+var mouseY = 0;
+var ballX = 0;
+var ballY = 0;
+var speed = 0.1;
+
+function cursorAnimate() {
+  var distX = mouseX - ballX;
+  var distY = mouseY - ballY;
+  ballX = ballX + distX * speed;
+  ballY = ballY + distY * speed;
+
+  _gsap.default.to(customCursor, {
+    left: mouseX + 'px',
+    duration: 0.6,
+    ease: 'power3.out'
+  });
+
+  _gsap.default.to(customCursor, {
+    top: mouseY + 'px',
+    duration: 0.6,
+    ease: 'power3.out'
+  });
+
+  _gsap.default.to(hoverStates, {
+    left: mouseX + 'px',
+    duration: 0.6,
+    ease: 'power3.out'
+  });
+
+  _gsap.default.to(hoverStates, {
+    top: mouseY + 'px',
+    duration: 0.6,
+    ease: 'power3.out'
+  });
+}
+
+document.addEventListener('mousemove', function (e) {
+  mouseX = e.pageX;
+  mouseY = e.pageY;
+  cursorAnimate();
+});
+cursorAnimate();
 
 function homeLaunch() {
   var tl = _gsap.default.timeline();
 
-  tl.fromTo('.loader_logo', {
+  tl.to('.line', {
+    scaleX: 0,
+    duration: 1.3,
+    ease: "power3.out"
+  }).to('.downloader', {
+    autoAlpha: 0,
+    duration: 0.6
+  }).fromTo('.loader_logo', {
     y: '20%',
     autoAlpha: 0
   }, {
@@ -45273,7 +45325,7 @@ function homeLaunch() {
     y: '0%',
     ease: "power3.out",
     stagger: 0.1
-  }, 1).to('.loader_text span', {
+  }, 2).to('.loader_text span', {
     duration: 1,
     y: '0%',
     ease: "power3.out",
@@ -45288,10 +45340,6 @@ function homeLaunch() {
     ease: "power3.out"
   }, "-=0.8");
   launch.addEventListener('click', function () {
-    var Introduction = new _splittext.default(".introduction", {
-      type: "chars, words"
-    });
-    var numChars = Introduction.chars.length;
     tl.set(objects[2], {
       intensity: 0
     }).to(intro, {
@@ -45306,24 +45354,29 @@ function homeLaunch() {
     }, "-=2").to(objects[2], {
       intensity: 1,
       duration: 3,
-      ease: 'power3.inOut',
-      onComplete: rand
-    }, "-=3");
+      ease: 'power3.inOut'
+    }, "-=3").to('.introduction', {
+      autoAlpha: 1,
+      duration: 1.6,
+      ease: 'power3.out'
+    }, 8.5).to('.introduction span', {
+      y: '0%',
+      duration: 1,
+      ease: 'power3.out',
+      stagger: 0.1
+    }, "-=1").to('.introduction span', {
+      y: '100%',
+      duration: 1,
+      ease: 'power3.in',
+      stagger: 0.1
+    }, "+=2").to('.introduction', {
+      autoAlpha: 0,
+      duration: 1,
+      ease: 'power3.in'
+    }, "-=1");
 
     var done = function done() {
       intro.style = 'diplay:none';
-    };
-
-    var rand = function rand() {
-      console.log(numChars);
-
-      for (var i = 0; i < numChars; i++) {
-        tl.to(Introduction.chars[i], {
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out"
-        });
-      }
     };
   });
   menu.addEventListener('click', function () {
@@ -45354,7 +45407,6 @@ function homeLaunch() {
   });
 }
 
-homeLaunch();
 var loader = new _GLTFLoader.GLTFLoader(); // Cursor
 
 var mouse = {
@@ -45414,24 +45466,17 @@ renderer.pixelRatio = 4;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.shadowMapSoft = true; // Controls
-
-var controls = new _OrbitControls.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.maxPolarAngle = Math.PI; // Animate
+// let controls = new OrbitControls(camera, renderer.domElement);
+// controls.enableDamping = true;
+// controls.dampingFactor = 0.05;
+// controls.maxPolarAngle = Math.PI;
+// Animate
 
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
   cameraLookingAt.set(lerp(cameraLookingAt.x, mouse.x * 9 + 160, 0.05), lerp(cameraLookingAt.y, 1 - mouse.y * 2, 0.05), 10);
   camera.lookAt(cameraLookingAt);
-  raycaster.setFromCamera(cursor, camera);
-  var intersects = raycaster.intersectObjects(scene.children);
-
-  for (var i = 0; i < intersects.length; i++) {
-    console.log(intersects[i].object);
-    intersects[i].object.material.color.set(0xff0000);
-  }
 }
 
 animate();
@@ -45445,16 +45490,94 @@ loader.load(_PROD.default, function (gltf) {
   handleSceneLoaded(gltf);
 }, function (xhr) {
   console.log(xhr.loaded / xhr.total * 100 + '% loaded');
+  var loadingPercent = xhr.loaded / xhr.total * 100;
+  console.log(loadingPercent);
+
+  _gsap.default.to('.line', {
+    width: loadingPercent + '%',
+    duration: 1,
+    ease: 'power3.out'
+  });
 }, function (error) {
   console.log(error);
 });
 
 function handleSceneLoaded(gltf) {
+  homeLaunch();
   scene.add(gltf.scene);
   scene.add(camera);
-  var blenderCamera = gltf.scene.children[4];
-  var cameraInfos = gltf.scene.children[4].children[0];
-  var blenderLight = gltf.scene.children[0];
+  var raycaster = new THREE.Raycaster();
+  var mouseVector = new THREE.Vector3();
+  var selectedObject = null;
+  window.addEventListener("mousemove", onDocumentMouseMove, false);
+
+  function getIntersects(x, y) {
+    x = x / window.innerWidth * 2 - 1;
+    y = -(y / window.innerHeight) * 2 + 1;
+    mouseVector.set(x, y, 0.5);
+    raycaster.setFromCamera(mouseVector, camera);
+    return raycaster.intersectObject(scene, true);
+  }
+
+  function onDocumentMouseMove(event) {
+    event.preventDefault();
+
+    if (selectedObject) {
+      selectedObject = null;
+    }
+
+    var intersects = getIntersects(event.layerX, event.layerY);
+
+    if (intersects.length > 0) {
+      var res = intersects.filter(function (res) {
+        return res && res.object;
+      })[0];
+
+      if (res && res.object) {
+        selectedObject = res.object;
+
+        if (selectedObject == objects[24]) {
+          document.querySelector('.critics').classList.add('active');
+        } else {
+          document.querySelector('.critics').classList.remove('active');
+        }
+
+        if (selectedObject == objects[27]) {
+          document.querySelector('.context').classList.add('active');
+        } else {
+          document.querySelector('.context').classList.remove('active');
+        }
+
+        if (selectedObject == objects[28]) {
+          document.querySelector('.synopsis').classList.add('active');
+        } else {
+          document.querySelector('.synopsis').classList.remove('active');
+        }
+
+        if (selectedObject == objects[25]) {
+          document.querySelector('.perso_1').classList.add('active');
+        } else {
+          document.querySelector('.perso_1').classList.remove('active');
+        }
+
+        if (selectedObject == objects[23]) {
+          document.querySelector('.perso_3').classList.add('active');
+        } else {
+          document.querySelector('.perso_3').classList.remove('active');
+        }
+
+        if (selectedObject == objects[29]) {
+          document.querySelector('.perso_2').classList.add('active');
+        } else {
+          document.querySelector('.perso_2').classList.remove('active');
+        }
+      }
+    }
+  }
+
+  var blenderCamera = gltf.scene.children[5];
+  var cameraInfos = gltf.scene.children[5].children[0];
+  var blenderLight = gltf.scene.children[1];
   var materials;
   gltf.scene.traverse(function (object) {
     objects.push(object);
@@ -45471,34 +45594,14 @@ function handleSceneLoaded(gltf) {
       }
     }
   });
-  console.log(gltf.scene.position); // gltf.scene.position.y = 7
-  // gltf.scene.position.x = 0
-  // gltf.scene.position.z = 15
-
-  objects[2].intensity = 1;
-  objects[2].castShadow = false;
-  objects[2].receiveShadow = false;
-  objects[2].decay = 7;
-  objects[2].distance = 140; // objects[4].shadow.radius = 30
-  // objects[4].shadow.bias = 0.00001
-  // objects[4].shadow.mapSize.width = 2048;
-  // objects[4].shadow.mapSize.height = 2048;
-  // camera.position.x = -65;
-  // camera.position.y = 0;
-  // camera.position.z = -10;
-  // camera.rotation.z = blenderCamera.rotation.z;
-  // camera.rotation.x = blenderCamera.rotation.x;
-  // camera.rotation.y = blenderCamera.rotation.y;
-  // camera.aspect = cameraInfos.aspect;
-  // camera.fov = cameraInfos.fov;
-  // camera.far = cameraInfos.far;
-  // camera.near = cameraInfos.near;
-  // light.castShadow = true;
-  // light.position.x = blenderLight.position.x;
-  // light.position.y = blenderLight.position.y;
-  // light.position.z = blenderLight.position.z;
+  console.log(objects);
+  objects[4].intensity = 1;
+  objects[4].castShadow = false;
+  objects[4].receiveShadow = false;
+  objects[4].decay = 7;
+  objects[4].distance = 140;
 }
-},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/loaders/GLTFLoader":"node_modules/three/examples/jsm/loaders/GLTFLoader.js","three/examples/jsm/controls/OrbitControls":"node_modules/three/examples/jsm/controls/OrbitControls.js","three/examples/jsm/loaders/DRACOLoader.js":"node_modules/three/examples/jsm/loaders/DRACOLoader.js","gsap":"node_modules/gsap/index.js","/src/assets/models/PROD3.glb":"src/assets/models/PROD3.glb","/src/js/splittext":"src/js/splittext.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/loaders/GLTFLoader":"node_modules/three/examples/jsm/loaders/GLTFLoader.js","three/examples/jsm/controls/OrbitControls":"node_modules/three/examples/jsm/controls/OrbitControls.js","three/examples/jsm/loaders/DRACOLoader.js":"node_modules/three/examples/jsm/loaders/DRACOLoader.js","gsap":"node_modules/gsap/index.js","/src/assets/models/PROD7.gltf":"src/assets/models/PROD7.gltf","/src/js/splittext":"src/js/splittext.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -45526,7 +45629,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64497" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65312" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
