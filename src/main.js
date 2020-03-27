@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import gsap from 'gsap'
-import postit from '/src/assets/models/PROD3.glb'
+import postit from '/src/assets/models/PROD7.gltf'
 import SplitText from '/src/js/splittext'
 
 const menu = document.querySelector('.menu')
@@ -12,29 +12,59 @@ const launch = document.querySelector('.loader_btn')
 const intro = document.querySelector('.loader')
 const raycaster = new THREE.Raycaster();
 
+const customCursor = document.querySelector('.cursor');
+const hoverStates = document.querySelector('.hover-states');
+
+let mouseX = 0;
+let mouseY = 0;
+let ballX = 0;
+let ballY = 0;
+let speed = 0.1;
+
+function cursorAnimate() {
+  let distX = mouseX - ballX
+  let distY = mouseY - ballY
+
+  ballX = ballX + (distX * speed)
+  ballY = ballY + (distY * speed)
+
+  gsap.to(customCursor, {left: mouseX + 'px',duration: 0.6,ease: 'power3.out'})
+  gsap.to(customCursor, {top: mouseY + 'px',duration: 0.6,ease: 'power3.out'})
+
+  gsap.to(hoverStates, {left: mouseX + 'px',duration: 0.6,ease: 'power3.out'})
+  gsap.to(hoverStates, {top: mouseY + 'px',duration: 0.6,ease: 'power3.out'})
+}
+
+document.addEventListener('mousemove',function(e){
+  mouseX = e.pageX
+  mouseY = e.pageY
+  cursorAnimate()
+})
+
+cursorAnimate()
+
+
 function homeLaunch() {
   const tl = gsap.timeline()
 
   tl
-  .fromTo('.loader_logo',{y:'20%', autoAlpha:0}, {autoAlpha:1, duration:1.6, y:'0%', ease:"power3.out", stagger:0.1}, 1)
+  .to('.line', {scaleX:0, duration:1.3, ease:"power3.out"})
+  .to('.downloader', {autoAlpha:0, duration: 0.6})
+  .fromTo('.loader_logo',{y:'20%', autoAlpha:0}, {autoAlpha:1, duration:1.6, y:'0%', ease:"power3.out", stagger:0.1}, 2)
   .to('.loader_text span', {duration:1, y:'0%', ease:"power3.out", stagger:0.1}, "-=1")
   .fromTo('.loader_btn',{y:'20%', autoAlpha:0}, {autoAlpha:1, duration:1.6, y:'0%', ease:"power3.out"},"-=0.8")
 
   launch.addEventListener('click', function(){
-    var Introduction = new SplitText(".introduction", {type:"chars, words"})
-    var numChars = Introduction.chars.length;
     tl
     .set(objects[2], {intensity:0})
     .to(intro, {autoAlpha:0, duration: 1.15, ease:'power3.out', onComplete:done})
     .from(camera.position, {x:-150, duration:5, ease:'power3.inOut'}, "-=2")
-    .to(objects[2], {intensity:1, duration:3, ease:'power3.inOut', onComplete:rand}, "-=3")
+    .to(objects[2], {intensity:1, duration:3, ease:'power3.inOut'}, "-=3")
+    .to('.introduction', {autoAlpha:1, duration:1.6, ease:'power3.out'}, 8.5)
+    .to('.introduction span', {y:'0%', duration:1, ease:'power3.out', stagger:0.1}, "-=1")
+    .to('.introduction span', {y:'100%', duration:1, ease:'power3.in', stagger:0.1}, "+=2")
+    .to('.introduction', {autoAlpha:0, duration:1, ease:'power3.in'},"-=1")
     const done = function(){intro.style = 'diplay:none'}
-    const rand = function(){
-      console.log(numChars)
-      for(var i = 0; i < numChars; i++){
-        tl.to(Introduction.chars[i], {opacity:1, duration:1, ease:"power3.out"});
-      }
-    }
   })
 
   menu.addEventListener('click', function(){
@@ -51,8 +81,6 @@ function homeLaunch() {
   })
 
 }
-
-homeLaunch()
 
 const loader = new GLTFLoader()
 
@@ -124,10 +152,10 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap
 renderer.shadowMapSoft = true
 
 // Controls
-let controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.maxPolarAngle = Math.PI;
+// let controls = new OrbitControls(camera, renderer.domElement);
+// controls.enableDamping = true;
+// controls.dampingFactor = 0.05;
+// controls.maxPolarAngle = Math.PI;
 
 // Animate
 function animate() {
@@ -138,13 +166,6 @@ function animate() {
     lerp(cameraLookingAt.y, 1 - mouse.y*2, 0.05),10
   )
   camera.lookAt(cameraLookingAt)
-
-  raycaster.setFromCamera( cursor, camera )
-  const intersects = raycaster.intersectObjects( scene.children )
-  for ( var i = 0; i < intersects.length; i++ ) {
-    console.log(intersects[i].object)
-    intersects[ i ].object.material.color.set( 0xff0000 );
-  }
 }
 animate();
 
@@ -159,6 +180,9 @@ loader.load(
   },
   function ( xhr ) {
     console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' )
+    const loadingPercent = ( xhr.loaded / xhr.total * 100 )
+    console.log(loadingPercent)
+    gsap.to('.line', {width:loadingPercent + '%', duration:1, ease:'power3.out'})
   },
   function ( error ) {
     console.log(error);
@@ -166,12 +190,77 @@ loader.load(
 )
 
 function handleSceneLoaded(gltf){
-  scene.add(gltf.scene);
+  homeLaunch()
+  scene.add(gltf.scene)
   scene.add(camera)
+  var raycaster = new THREE.Raycaster()
+  var mouseVector = new THREE.Vector3()
+  var selectedObject = null
+  window.addEventListener( "mousemove", onDocumentMouseMove, false )
 
-  let blenderCamera = gltf.scene.children[4]
-  let cameraInfos = gltf.scene.children[4].children[0]
-  let blenderLight = gltf.scene.children[0]
+  function getIntersects( x, y ) {
+
+    x = ( x / window.innerWidth ) * 2 - 1
+    y = - ( y / window.innerHeight ) * 2 + 1
+
+    mouseVector.set( x, y, 0.5 )
+    raycaster.setFromCamera( mouseVector, camera )
+
+    return raycaster.intersectObject( scene, true )
+
+  }
+
+  function onDocumentMouseMove( event ) {
+
+    event.preventDefault();
+    if ( selectedObject ) {
+      selectedObject = null;
+    }
+
+    var intersects = getIntersects( event.layerX, event.layerY );
+    if ( intersects.length > 0 ) {
+      var res = intersects.filter( function ( res ) {
+        return res && res.object
+      } )[0]
+      if ( res && res.object ) {
+        selectedObject = res.object
+        if (selectedObject == objects[24]) {
+          document.querySelector('.critics').classList.add('active')
+        } else {
+          document.querySelector('.critics').classList.remove('active')
+        }
+        if (selectedObject == objects[27]) {
+          document.querySelector('.context').classList.add('active')
+        } else {
+          document.querySelector('.context').classList.remove('active')
+        }
+        if (selectedObject == objects[28]) {
+          document.querySelector('.synopsis').classList.add('active')
+        } else {
+          document.querySelector('.synopsis').classList.remove('active')
+        }
+        if (selectedObject == objects[25]) {
+          document.querySelector('.perso_1').classList.add('active')
+        } else {
+          document.querySelector('.perso_1').classList.remove('active')
+        }
+        if (selectedObject == objects[23]) {
+          document.querySelector('.perso_3').classList.add('active')
+        } else {
+          document.querySelector('.perso_3').classList.remove('active')
+        }
+        if (selectedObject == objects[29]) {
+          document.querySelector('.perso_2').classList.add('active')
+        } else {
+          document.querySelector('.perso_2').classList.remove('active')
+        }
+      }
+    }
+  }
+
+  let blenderCamera = gltf.scene.children[5]
+  let cameraInfos = gltf.scene.children[5].children[0]
+  let blenderLight = gltf.scene.children[1]
   let materials;
 
 
@@ -188,41 +277,13 @@ function handleSceneLoaded(gltf){
       }
     }
   })
-
-  console.log(gltf.scene.position)
-
-  // gltf.scene.position.y = 7
-  // gltf.scene.position.x = 0
-  // gltf.scene.position.z = 15
+  console.log(objects)
 
 
-  objects[2].intensity = 1
-  objects[2].castShadow = false
-  objects[2].receiveShadow = false
-  objects[2].decay = 7
-  objects[2].distance = 140
-
-  // objects[4].shadow.radius = 30
-  // objects[4].shadow.bias = 0.00001
-  // objects[4].shadow.mapSize.width = 2048;
-  // objects[4].shadow.mapSize.height = 2048;
-
-  // camera.position.x = -65;
-  // camera.position.y = 0;
-  // camera.position.z = -10;
-
-  // camera.rotation.z = blenderCamera.rotation.z;
-  // camera.rotation.x = blenderCamera.rotation.x;
-  // camera.rotation.y = blenderCamera.rotation.y;
-
-  // camera.aspect = cameraInfos.aspect;
-  // camera.fov = cameraInfos.fov;
-  // camera.far = cameraInfos.far;
-  // camera.near = cameraInfos.near;
-
-  // light.castShadow = true;
-  // light.position.x = blenderLight.position.x;
-  // light.position.y = blenderLight.position.y;
-  // light.position.z = blenderLight.position.z;
+  objects[4].intensity = 1
+  objects[4].castShadow = false
+  objects[4].receiveShadow = false
+  objects[4].decay = 7
+  objects[4].distance = 140
 
 }
